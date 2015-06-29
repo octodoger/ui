@@ -18,12 +18,12 @@ module.exports = function(grunt) {
                 proxies: [{
                     context: "/api",
                     host: grunt.option("proxy.host") ? grunt.option("proxy.host") : "localhost",
-                    port: grunt.option("proxy.port") ? grunt.option("proxy.port") : 3000,
+                    port: grunt.option("proxy.port") ? grunt.option("proxy.port") : 8080,
                     https: false,
                     xforward: false
                 }, {
 		    host: grunt.option("proxy.host") ? grunt.option("proxy.host") : "localhost",
-		    port: grunt.option("proxy.port") ? grunt.option("proxy.port") : 3000,
+		    port: grunt.option("proxy.port") ? grunt.option("proxy.port") : 8080,
 		    https: false,
 		    xforward: false
 	        }]
