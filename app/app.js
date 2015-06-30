@@ -1,4 +1,4 @@
-var hqcode = angular.module('hqcode', ['ngRoute', 'ngResource']);
+var hqcode = angular.module('hqcode', ['ngRoute', 'ngResource', 'toggle-switch']);
 
 hqcode.config([ '$routeProvider', function ($routeProvider) {
 	$routeProvider.when('/github', {
@@ -45,6 +45,14 @@ hqcode.controller('GithubCtrl', [ '$scope', '$rootScope', '$location', 'GithubSr
 	}, function (err) {
 		alert("Could not load repos, because: " + err.getMessage());
 	});
+
+	$scope.activateRepo = function (repoName, shouldActivate) {
+		GithubSrv.activateRepo(repoName, shouldActivate).then(function () {
+			alert("actiavted");
+		}, function (err) {
+			alert("Could not activate/diactivate repo, because: " + err.getMessage());
+		});
+	};
 }]);
 
 hqcode.factory('GithubSrv', [ 'Github', 'GithubOAuth', '$q', function (Github, GithubOAuth, $q) {
@@ -61,6 +69,15 @@ hqcode.factory('GithubSrv', [ 'Github', 'GithubOAuth', '$q', function (Github, G
 		getRepos: function () {
 			return $q(function (resolve, reject) {
 				Github.query().$promise.then(function (repos) {
+					resolve(repos);
+				}, function (err) {
+					reject(err);
+				});
+			});
+		},
+		activateRepo: function (repoName, shouldActivate) {
+			return $q(function (resolve, reject) {
+				Github.save({repo: repoName, shouldActivate: shouldActivate}).$promise.then(function (repos) {
 					resolve(repos);
 				}, function (err) {
 					reject(err);
