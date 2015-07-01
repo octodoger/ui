@@ -16,9 +16,10 @@ hqcode.run(['$http', function ($http) {
 	}
 }]);
 
-hqcode.controller('MainController', [ '$scope', '$rootScope', '$location', 'GithubSrv', function ($scope, $rootScope, $location, GithubSrv) {
-	GithubSrv.getUrl().then(function (url) {
-		$rootScope.githubRedirectUrl = url;
+hqcode.controller('MainController', [ '$scope', '$rootScope', '$location', 'GithubSrv', 'LoginSrv', function ($scope, $rootScope, $location, GithubSrv, LoginSrv) {
+	GithubSrv.getOAuthInfo().then(function (oAuthInfo) {
+		$rootScope.githubRedirectUrl = oAuthInfo.githubUrl;
+		LoginSrv.login(oAuthInfo.token);
 	}, function (err) {
 		alert("Could not load redirect github url, because: " + error.getMessage());
 	});
@@ -39,6 +40,10 @@ hqcode.factory('Github', [ '$resource', function($resource) {
 	return $resource('/api/github/repositories', {id: '@id'});
 }]);
 
+hqcode.factory('GithubRepository', [ '$resource', function($resource) {
+	return $resource('/api/github/repository', {id: '@id'});
+}]);
+
 hqcode.controller('GithubCtrl', [ '$scope', '$rootScope', '$location', 'GithubSrv', function ($scope, $rootScope, $location, GithubSrv) {
 	GithubSrv.getRepos().then(function (repos) {
 		$scope.githubRepos = repos;
@@ -55,12 +60,21 @@ hqcode.controller('GithubCtrl', [ '$scope', '$rootScope', '$location', 'GithubSr
 	};
 }]);
 
-hqcode.factory('GithubSrv', [ 'Github', 'GithubOAuth', '$q', function (Github, GithubOAuth, $q) {
+hqcode.factory('LoginSrv', [ 'Github', 'GithubRepository', 'GithubOAuth', '$http', function (Github, GithubRepository, GithubOAuth, $http) {
 	return {
-		getUrl: function () {
+		login: function (token) {
+			$http.defaults.headers.common['token'] = token;
+			localStorage.setItem('token', token);
+		}
+	};
+}]);
+
+hqcode.factory('GithubSrv', [ 'Github', 'GithubRepository', 'GithubOAuth', '$q', function (Github, GithubRepository, GithubOAuth, $q) {
+	return {
+		getOAuthInfo: function () {
 			return $q(function (resolve, reject) {
-				GithubOAuth.get().$promise.then(function (URL) {
-					resolve(URL.githubUrl);
+				GithubOAuth.get().$promise.then(function (oAuthInfo) {
+					resolve(oAuthInfo);
 				}, function (err) {
 					reject(err);
 				});
@@ -75,9 +89,9 @@ hqcode.factory('GithubSrv', [ 'Github', 'GithubOAuth', '$q', function (Github, G
 				});
 			});
 		},
-		activateRepo: function (repoName, shouldActivate) {
+		activateRepo: function (repositoryName, shouldActivate) {
 			return $q(function (resolve, reject) {
-				Github.save({repo: repoName, shouldActivate: shouldActivate}).$promise.then(function (repos) {
+				GithubRepository.save({repositoryName: repositoryName, shouldActivate: shouldActivate}).$promise.then(function (repos) {
 					resolve(repos);
 				}, function (err) {
 					reject(err);
