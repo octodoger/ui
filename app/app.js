@@ -7,6 +7,10 @@ hqcode.config([ '$routeProvider', function ($routeProvider) {
 	});
 }]);
 
+hqcode.constant('CONFIG', {
+	API_BASE_URL: '' //Autowired from Grunt
+});
+
 hqcode.run(['$http', function ($http) {
 	if (localStorage.getItem('token')) {
 		$http.defaults.headers.common['token'] = localStorage.getItem('token');
@@ -29,19 +33,18 @@ hqcode.controller('MainController', [ '$scope', '$rootScope', '$location', 'Gith
 			window.location.href = $rootScope.githubRedirectUrl;
 		}
 	};
-
 }]);
 
-hqcode.factory('GithubOAuth', [ '$resource', function($resource) {
-	return $resource('/api/oauth', {id: '@id'});
+hqcode.factory('GithubOAuth', [ '$resource', 'CONFIG', function($resource, CONFIG) {
+	return $resource(CONFIG.API_BASE_URL + '/api/oauth', {id: '@id'});
 }]);
 
 hqcode.factory('Github', [ '$resource', function($resource) {
-	return $resource('/api/github/repositories', {id: '@id'});
+	return $resource(CONFIG.API_BASE_URL + '/api/github/repositories', {id: '@id'});
 }]);
 
 hqcode.factory('GithubRepository', [ '$resource', function($resource) {
-	return $resource('/api/github/repository', {id: '@id'});
+	return $resource(CONFIG.API_BASE_URL + '/api/github/repository', {id: '@id'});
 }]);
 
 hqcode.controller('GithubCtrl', [ '$scope', '$rootScope', '$location', 'GithubSrv', function ($scope, $rootScope, $location, GithubSrv) {
