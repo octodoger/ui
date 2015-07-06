@@ -25,7 +25,7 @@ hqcode.controller('MainController', [ '$scope', '$rootScope', '$location', 'Gith
 		$rootScope.githubRedirectUrl = oAuthInfo.githubUrl;
 		LoginSrv.login(oAuthInfo.token);
 	}, function (err) {
-		alert("Could not load redirect github url, because: " + error.getMessage());
+		alert("Could not load redirect github url, because: " + err.message);
 	});
 
 	$scope.githubLogin = function () {
@@ -35,15 +35,15 @@ hqcode.controller('MainController', [ '$scope', '$rootScope', '$location', 'Gith
 	};
 }]);
 
-hqcode.factory('GithubOAuth', [ '$resource', 'CONFIG', function($resource, CONFIG) {
+hqcode.factory('GithubOAuth', [ '$resource', 'CONFIG', function ($resource, CONFIG) {
 	return $resource(CONFIG.API_BASE_URL + '/api/oauth', {id: '@id'});
 }]);
 
-hqcode.factory('Github', [ '$resource', function($resource) {
+hqcode.factory('Github', [ '$resource', 'CONFIG', function ($resource, CONFIG) {
 	return $resource(CONFIG.API_BASE_URL + '/api/github/repositories', {id: '@id'});
 }]);
 
-hqcode.factory('GithubRepository', [ '$resource', function($resource) {
+hqcode.factory('GithubRepository', [ '$resource', 'CONFIG', function ($resource, CONFIG) {
 	return $resource(CONFIG.API_BASE_URL + '/api/github/repository', {id: '@id'});
 }]);
 
@@ -51,14 +51,14 @@ hqcode.controller('GithubCtrl', [ '$scope', '$rootScope', '$location', 'GithubSr
 	GithubSrv.getRepos().then(function (repos) {
 		$scope.githubRepos = repos;
 	}, function (err) {
-		alert("Could not load repos, because: " + err.getMessage());
+		alert("Could not load repos, because: " + err.message);
 	});
 
 	$scope.activateRepo = function (repoName, shouldActivate) {
 		GithubSrv.activateRepo(repoName, shouldActivate).then(function () {
 			alert("actiavted");
 		}, function (err) {
-			alert("Could not activate/diactivate repo, because: " + err.getMessage());
+			alert("Could not activate/diactivate repo, because: " + err.message);
 		});
 	};
 }]);
