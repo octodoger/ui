@@ -24,19 +24,15 @@ hqcode.run(['$http', function ($http) {
 }]);
 
 hqcode.controller('MainController', [ '$scope', '$rootScope', '$location', 'GithubSrv', 'LoginSrv', function ($scope, $rootScope, $location, GithubSrv, LoginSrv) {
-	if ($location.search().code && $location.search().state) {
-		hqcodeGithub.save($location.search()).$promise.then(function () {
-			console.log("ok");
-		}, function (err) {
-			alert("Cannot login, because: " + err.data.message);
-		});
-	} else {
+	if (!LoginSrv.isLogin) {
 		GithubSrv.getOAuthInfo().then(function (oAuthInfo) {
 			$rootScope.githubRedirectUrl = oAuthInfo.githubUrl;
 			LoginSrv.login(oAuthInfo.token);
 		}, function (err) {
 			alert("Could not load redirect github url, because: " + err.message);
 		});
+	} else {
+		LoginSrv.updateLoginHeader();
 	}
 
 	$scope.githubLogin = function () {
@@ -79,6 +75,12 @@ hqcode.factory('LoginSrv', [ 'Github', 'GithubRepository', 'GithubOAuth', '$http
 		login: function (token) {
 			$http.defaults.headers.common['token'] = token;
 			localStorage.setItem('token', token);
+		},
+		updateLoginHeader: function () {
+			$http.defaults.headers.common['token'] = localStorage.getItem('token');
+		},
+		isLogin: function () {
+			return localStorage.getItem('token');
 		}
 	};
 }]);
