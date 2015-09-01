@@ -7,9 +7,6 @@ hqcode.config([ '$routeProvider', function ($routeProvider) {
 	}).when('/github-login', {
 		templateUrl: '/github.html',
 		controller: 'GithubLoginCtrl'
-	}).when('/oauth', {
-		templateUrl: '/github.html',
-		controller: 'GithubLoginCtrl'
 	});
 }]);
 
@@ -27,12 +24,20 @@ hqcode.run(['$http', function ($http) {
 }]);
 
 hqcode.controller('MainController', [ '$scope', '$rootScope', '$location', 'GithubSrv', 'LoginSrv', function ($scope, $rootScope, $location, GithubSrv, LoginSrv) {
-	GithubSrv.getOAuthInfo().then(function (oAuthInfo) {
-		$rootScope.githubRedirectUrl = oAuthInfo.githubUrl;
-		LoginSrv.login(oAuthInfo.token);
-	}, function (err) {
-		alert("Could not load redirect github url, because: " + err.message);
-	});
+	if ($location.search().code && $location.search().state) {
+		hqcodeGithub.save($location.search()).$promise.then(function () {
+			console.log("ok");
+		}, function (err) {
+			alert("Cannot login, because: " + err.data.message);
+		});
+	} else {
+		GithubSrv.getOAuthInfo().then(function (oAuthInfo) {
+			$rootScope.githubRedirectUrl = oAuthInfo.githubUrl;
+			LoginSrv.login(oAuthInfo.token);
+		}, function (err) {
+			alert("Could not load redirect github url, because: " + err.message);
+		});
+	}
 
 	$scope.githubLogin = function () {
 		if ($rootScope.githubRedirectUrl) {
@@ -118,12 +123,4 @@ hqcode.controller('GithubLoginCtrl', [ '$scope', '$rootScope', '$location', '$ht
 		$http.defaults.headers.common['token'] = token;
 		localStorage.setItem('token', token);
 	};
-
-	if ($location.search().code && $location.search().state) {
-		hqcodeGithub.save($location.search()).$promise.then(function () {
-			console.log("ok");
-		}, function (err) {
-			alert("Cannot login, because: " + err.data.message);
-		});
-	}
 }]);
