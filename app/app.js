@@ -24,16 +24,12 @@ hqcode.run(['$http', function ($http) {
 }]);
 
 hqcode.controller('MainController', [ '$scope', '$rootScope', '$location', 'GithubSrv', 'LoginSrv', function ($scope, $rootScope, $location, GithubSrv, LoginSrv) {
-	if (!LoginSrv.isLogin) {
-		GithubSrv.getOAuthInfo().then(function (oAuthInfo) {
-			$rootScope.githubRedirectUrl = oAuthInfo.githubUrl;
-			LoginSrv.login(oAuthInfo.token);
-		}, function (err) {
-			alert("Could not load redirect github url, because: " + err.message);
-		});
-	} else {
-		LoginSrv.updateLoginHeader();
-	}
+	GithubSrv.getOAuthInfo().then(function (oAuthInfo) {
+		$rootScope.githubRedirectUrl = oAuthInfo.githubUrl;
+		LoginSrv.login(oAuthInfo.token);
+	}, function (err) {
+		alert("Could not load redirect github url, because: " + err.message);
+	});
 
 	$scope.githubLogin = function () {
 		if ($rootScope.githubRedirectUrl) {
@@ -75,12 +71,6 @@ hqcode.factory('LoginSrv', [ 'Github', 'GithubRepository', 'GithubOAuth', '$http
 		login: function (token) {
 			$http.defaults.headers.common['token'] = token;
 			localStorage.setItem('token', token);
-		},
-		updateLoginHeader: function () {
-			$http.defaults.headers.common['token'] = localStorage.getItem('token');
-		},
-		isLogin: function () {
-			return localStorage.getItem('token');
 		}
 	};
 }]);
