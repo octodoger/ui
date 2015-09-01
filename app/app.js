@@ -107,6 +107,7 @@ hqcode.factory('GithubSrv', [ 'Github', 'GithubRepository', 'GithubOAuth', '$q',
 				});
 			});
 		}
+}}]);
 
 hqcode.factory('hqcodeGithub', [ '$resource', function($resource) {
 	return $resource('/api/oauth/github');
