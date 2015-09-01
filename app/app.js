@@ -5,10 +5,10 @@ hqcode.config([ '$routeProvider', function ($routeProvider) {
 		templateUrl: '/github.html',
 		controller: 'GithubCtrl'
 	}).when('/github-login', {
-		templateUrl: '/github-login.html',
+		templateUrl: '/github.html',
 		controller: 'GithubLoginCtrl'
 	}).when('/oauth', {
-		templateUrl: '/github-login.html',
+		templateUrl: '/github.html',
 		controller: 'GithubLoginCtrl'
 	});
 }]);
