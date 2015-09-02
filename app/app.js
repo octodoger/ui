@@ -1,14 +1,18 @@
-var hqcode = angular.module('hqcode', ['ngRoute', 'ngResource']);
+var hqcode = angular.module('hqcode', ['ngRoute', 'ngResource', 'toggle-switch']);
 
 hqcode.config([ '$routeProvider', function ($routeProvider) {
-	$routeProvider.when('/github-login', {
-		templateUrl: '/github-login.html',
-		controller: 'GithubLoginCtrl'
-	}).when('/oauth', {
-		templateUrl: '/github-login.html',
+	$routeProvider.when('/github', {
+		templateUrl: '/github.html',
+		controller: 'GithubCtrl'
+	}).when('/github-login', {
+		templateUrl: '/github.html',
 		controller: 'GithubLoginCtrl'
 	});
 }]);
+
+hqcode.constant('CONFIG', {
+	API_BASE_URL: '' //Autowired from Grunt
+});
 
 hqcode.run(['$http', function ($http) {
 	if (localStorage.getItem('token')) {
@@ -19,9 +23,89 @@ hqcode.run(['$http', function ($http) {
 	}
 }]);
 
-hqcode.factory('hqcode', [ '$resource', function($resource) {
-	return $resource('/api/hqcode/:id', {id: '@id'});
+hqcode.controller('MainController', [ '$scope', '$rootScope', '$location', 'GithubSrv', 'LoginSrv', function ($scope, $rootScope, $location, GithubSrv, LoginSrv) {
+	GithubSrv.getOAuthInfo().then(function (oAuthInfo) {
+		$rootScope.githubRedirectUrl = oAuthInfo.githubUrl;
+		$rootScope.token = oAuthInfo.token;
+	}, function (err) {
+		alert("Could not load redirect github url, because: " + err.message);
+	});
+
+	$scope.githubLogin = function () {
+		if ($rootScope.githubRedirectUrl) {
+			LoginSrv.login($rootScope.token);
+			window.location.href = $rootScope.githubRedirectUrl;
+		}
+	};
 }]);
+
+hqcode.factory('GithubOAuth', [ '$resource', 'CONFIG', function ($resource, CONFIG) {
+	return $resource(CONFIG.API_BASE_URL + '/api/oauth', {id: '@id'});
+}]);
+
+hqcode.factory('Github', [ '$resource', 'CONFIG', function ($resource, CONFIG) {
+	return $resource(CONFIG.API_BASE_URL + '/api/github/repositories', {id: '@id'});
+}]);
+
+hqcode.factory('GithubRepository', [ '$resource', 'CONFIG', function ($resource, CONFIG) {
+	return $resource(CONFIG.API_BASE_URL + '/api/github/repository', {id: '@id'});
+}]);
+
+hqcode.controller('GithubCtrl', [ '$scope', '$rootScope', '$location', 'GithubSrv', function ($scope, $rootScope, $location, GithubSrv) {
+	GithubSrv.getRepos().then(function (repos) {
+		$scope.githubRepos = repos;
+	}, function (err) {
+		alert("Could not load repos, because: " + err.message);
+	});
+
+	$scope.activateRepo = function (repoName, shouldActivate) {
+		GithubSrv.activateRepo(repoName, shouldActivate).then(function () {
+			alert("activated");
+		}, function (err) {
+			alert("Could not activate/diactivate repo, because: " + err.message);
+		});
+	};
+}]);
+
+hqcode.factory('LoginSrv', [ 'Github', 'GithubRepository', 'GithubOAuth', '$http', function (Github, GithubRepository, GithubOAuth, $http) {
+	return {
+		login: function (token) {
+			localStorage.setItem('token', token);
+			$http.defaults.headers.common['token'] = token;
+		}
+	};
+}]);
+
+hqcode.factory('GithubSrv', [ 'Github', 'GithubRepository', 'GithubOAuth', '$q', '$http', function (Github, GithubRepository, GithubOAuth, $q, $http) {
+	return {
+		getOAuthInfo: function () {
+			return $q(function (resolve, reject) {
+				GithubOAuth.get().$promise.then(function (oAuthInfo) {
+					resolve(oAuthInfo);
+				}, function (err) {
+					reject(err);
+				});
+			});
+		},
+		getRepos: function () {
+			return $q(function (resolve, reject) {
+				Github.query().$promise.then(function (repos) {
+					resolve(repos);
+				}, function (err) {
+					reject(err);
+				});
+			});
+		},
+		activateRepo: function (repo) {
+			return $q(function (resolve, reject) {
+				GithubRepository.save(repo).$promise.then(function (repos) {
+					resolve(repos);
+				}, function (err) {
+					reject(err);
+				});
+			});
+		}
+}}]);
 
 hqcode.factory('hqcodeGithub', [ '$resource', function($resource) {
 	return $resource('/api/oauth/github');
@@ -32,12 +116,4 @@ hqcode.controller('GithubLoginCtrl', [ '$scope', '$rootScope', '$location', '$ht
 		$http.defaults.headers.common['token'] = token;
 		localStorage.setItem('token', token);
 	};
-
-	if ($location.search().code && $location.search().state) {
-		hqcodeGithub.save($location.search()).$promise.then(function () {
-			console.log("ok");
-		}, function (err) {
-			alert("Cannot login, because: " + err.data.message);
-		});
-	}
 }]);
