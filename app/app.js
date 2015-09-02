@@ -75,7 +75,7 @@ hqcode.factory('LoginSrv', [ 'Github', 'GithubRepository', 'GithubOAuth', '$http
 	};
 }]);
 
-hqcode.factory('GithubSrv', [ 'Github', 'GithubRepository', 'GithubOAuth', '$q', function (Github, GithubRepository, GithubOAuth, $q) {
+hqcode.factory('GithubSrv', [ 'Github', 'GithubRepository', 'GithubOAuth', '$q', '$http', function (Github, GithubRepository, GithubOAuth, $q, $http) {
 	return {
 		getOAuthInfo: function () {
 			$http.defaults.headers.common['token'] = localStorage.get('token');
