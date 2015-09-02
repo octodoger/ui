@@ -26,13 +26,14 @@ hqcode.run(['$http', function ($http) {
 hqcode.controller('MainController', [ '$scope', '$rootScope', '$location', 'GithubSrv', 'LoginSrv', function ($scope, $rootScope, $location, GithubSrv, LoginSrv) {
 	GithubSrv.getOAuthInfo().then(function (oAuthInfo) {
 		$rootScope.githubRedirectUrl = oAuthInfo.githubUrl;
-		LoginSrv.login(oAuthInfo.token);
+		$rootScope.token = oAuthInfo.token;
 	}, function (err) {
 		alert("Could not load redirect github url, because: " + err.message);
 	});
 
 	$scope.githubLogin = function () {
 		if ($rootScope.githubRedirectUrl) {
+			LoginSrv.login($rootScope.token);
 			window.location.href = $rootScope.githubRedirectUrl;
 		}
 	};
@@ -59,7 +60,7 @@ hqcode.controller('GithubCtrl', [ '$scope', '$rootScope', '$location', 'GithubSr
 
 	$scope.activateRepo = function (repoName, shouldActivate) {
 		GithubSrv.activateRepo(repoName, shouldActivate).then(function () {
-			alert("actiavted");
+			alert("activated");
 		}, function (err) {
 			alert("Could not activate/diactivate repo, because: " + err.message);
 		});
@@ -69,8 +70,8 @@ hqcode.controller('GithubCtrl', [ '$scope', '$rootScope', '$location', 'GithubSr
 hqcode.factory('LoginSrv', [ 'Github', 'GithubRepository', 'GithubOAuth', '$http', function (Github, GithubRepository, GithubOAuth, $http) {
 	return {
 		login: function (token) {
-			$http.defaults.headers.common['token'] = token;
 			localStorage.setItem('token', token);
+			$http.defaults.headers.common['token'] = token;
 		}
 	};
 }]);
