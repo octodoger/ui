@@ -1,6 +1,6 @@
 <div ng-repeat="repo in githubRepos">
 	<div>
-		<h2>{{repo}}:</h2>
-		<toggle-switch ng-click="activateRepo(repo, shouldActivateRepo);" ng-model="shouldActivateRepo" class="switch-success"></toggle-switch>
+		<h2>{{repo.repositoryName}}:</h2>
+		<toggle-switch ng-click="activateRepo(repo, shouldActivateRepo);" ng-model="repo.shouldActivateRepo" class="switch-success"></toggle-switch>
 	</div>
 </div>
