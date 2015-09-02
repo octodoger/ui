@@ -78,6 +78,7 @@ hqcode.factory('LoginSrv', [ 'Github', 'GithubRepository', 'GithubOAuth', '$http
 hqcode.factory('GithubSrv', [ 'Github', 'GithubRepository', 'GithubOAuth', '$q', function (Github, GithubRepository, GithubOAuth, $q) {
 	return {
 		getOAuthInfo: function () {
+			$http.defaults.headers.common['token'] = localStorage.get('token');
 			return $q(function (resolve, reject) {
 				GithubOAuth.get().$promise.then(function (oAuthInfo) {
 					resolve(oAuthInfo);
@@ -87,6 +88,7 @@ hqcode.factory('GithubSrv', [ 'Github', 'GithubRepository', 'GithubOAuth', '$q',
 			});
 		},
 		getRepos: function () {
+			$http.defaults.headers.common['token'] = localStorage.get('token');
 			return $q(function (resolve, reject) {
 				Github.query().$promise.then(function (repos) {
 					resolve(repos);
@@ -95,9 +97,10 @@ hqcode.factory('GithubSrv', [ 'Github', 'GithubRepository', 'GithubOAuth', '$q',
 				});
 			});
 		},
-		activateRepo: function (repositoryName, shouldActivate) {
+		activateRepo: function (repo) {
+			$http.defaults.headers.common['token'] = localStorage.get('token');
 			return $q(function (resolve, reject) {
-				GithubRepository.save({repositoryName: repositoryName, shouldActivate: shouldActivate}).$promise.then(function (repos) {
+				GithubRepository.save(repo).$promise.then(function (repos) {
 					resolve(repos);
 				}, function (err) {
 					reject(err);
