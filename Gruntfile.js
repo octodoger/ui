@@ -1,6 +1,11 @@
 module.exports = function(grunt) {
     grunt.initConfig({
         clean: ['build'],
+        exec: {
+            bower: {
+                cmd: "node node_modules/.bin/bower install --force"
+            }
+        },
         copy: {
             main: {
                 files: [{
@@ -57,9 +62,10 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-text-replace');
     grunt.loadNpmTasks('grunt-contrib-connect');
     grunt.loadNpmTasks('grunt-connect-proxy');
+    grunt.loadNpmTasks('grunt-exec');
 
 
-    grunt.registerTask('build', [ 'clean', 'copy:main', 'replace:main' ]);
+    grunt.registerTask('build', [ 'clean', 'copy:main', 'replace:main', 'exec:bower' ]);
 
     grunt.registerTask('default', [ 'build' ]);
 
