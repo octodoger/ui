@@ -1,6 +1,8 @@
 module.exports = function(grunt) {
     grunt.initConfig({
-        clean: ['build'],
+        clean: {
+            main: ['build']
+        },
         exec: {
             bower: {
                 cmd: "node node_modules/.bin/bower install --force"
@@ -10,21 +12,37 @@ module.exports = function(grunt) {
             main: {
                 files: [{
                     expand: true,
-                    src: ['app/*'],
+                    src: ['app/index.html'],
                     dest: 'build/',
+                    flatten: true
+                }, {
+                    expand: true,
+                    src: ['app/style/*'],
+                    dest: 'build/style/',
+                    flatten: true
+                }, {
+                    expand: true,
+                    src: ['app/partial/*'],
+                    dest: 'build/partial/',
                     flatten: true
                 }]
             }
         },
         replace: {
             main: {
-                src: ['build/**/*'],
+                src: ['build/hqcode.js'],
                 overwrite: true,
                 replacements: [{
                     from: /API_BASE_URL: '' \/\/Autowired from Grunt/g,
                     to: grunt.option('api-base-url') ? 'API_BASE_URL: \'' + grunt.option('api-base-url') + '\'' : 'API_BASE_URL: \'\''
                 }]
             }
+        },
+        concat: {
+            main: {
+              src: ['app/script/**/*.js'],
+              dest: 'build/hqcode.js',
+            },
         },
         connect: {
             server: {
@@ -63,9 +81,10 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-connect');
     grunt.loadNpmTasks('grunt-connect-proxy');
     grunt.loadNpmTasks('grunt-exec');
+    grunt.loadNpmTasks('grunt-contrib-concat');
 
 
-    grunt.registerTask('build', [ 'clean', 'copy:main', 'replace:main', 'exec:bower' ]);
+    grunt.registerTask('build', [ 'clean', 'copy', 'concat', 'replace:main', 'exec:bower' ]);
 
     grunt.registerTask('default', [ 'build' ]);
 
